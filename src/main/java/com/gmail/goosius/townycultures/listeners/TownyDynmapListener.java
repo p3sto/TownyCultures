@@ -1,7 +1,7 @@
 package com.gmail.goosius.townycultures.listeners;
 
 import com.gmail.goosius.townycultures.TownyCultures;
-import com.gmail.goosius.townycultures.metadata.TownMetaDataController;
+import com.gmail.goosius.townycultures.metadata.ResidentMetaDataController;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.dynmap.towny.events.BuildTownMarkerDescriptionEvent;
@@ -18,7 +18,7 @@ public class TownyDynmapListener implements Listener {
     public void on(BuildTownMarkerDescriptionEvent event) {
         if (!event.getDescription().contains("%culture%"))
             return;
-        String slug = TownMetaDataController.hasTownCulture(event.getTown()) ? TownyCultures.getCulture(event.getTown()) : "";
+        String slug = ResidentMetaDataController.hasCulture(event.getTown()) ? TownyCultures.getCulture(event.getTown()) : "";
         event.setDescription(event.getDescription().replace("%culture%", slug));
     }
 }

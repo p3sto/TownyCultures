@@ -1,22 +1,23 @@
 package com.gmail.goosius.townycultures.command;
 
+import com.gmail.goosius.townycultures.TownyCultures;
+import com.gmail.goosius.townycultures.enums.CultureType;
 import com.gmail.goosius.townycultures.enums.TownyCulturesPermissionNodes;
 import com.gmail.goosius.townycultures.events.PreCultureSetEvent;
-import com.gmail.goosius.townycultures.metadata.TownMetaDataController;
+import com.gmail.goosius.townycultures.metadata.ResidentMetaDataController;
 import com.gmail.goosius.townycultures.utils.CultureUtil;
 import com.gmail.goosius.townycultures.utils.Messaging;
-import com.palmergames.bukkit.towny.TownyCommandAddonAPI;
 import com.palmergames.bukkit.towny.command.BaseCommand;
 import com.palmergames.bukkit.towny.exceptions.TownyException;
-import com.palmergames.bukkit.towny.TownyCommandAddonAPI.CommandType;
-import com.palmergames.bukkit.towny.object.AddonCommand;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.Translatable;
+import com.palmergames.bukkit.towny.utils.NameUtil;
 import com.palmergames.bukkit.util.BukkitTools;
 import com.palmergames.bukkit.util.ChatTools;
 import com.palmergames.util.StringMgmt;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,21 +26,33 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-public class TownSetCultureAddon extends BaseCommand implements TabExecutor {
-	
-	public TownSetCultureAddon() {
-		AddonCommand townSetCultureCommand = new AddonCommand(CommandType.TOWN_SET, "culture", this);
-		TownyCommandAddonAPI.addSubCommand(townSetCultureCommand);
-	}
+public class CultureCommand extends BaseCommand implements TabExecutor {
+
+	private static final List<String> residentCulturesTabComplete = Arrays.asList("create", "invite", "join", "leave");
 
 	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-		return Collections.emptyList();
+		switch (args[0].toLowerCase()) {
+			case "create":
+				if (args.length == 3)
+					return NameUtil.filterByStart(CultureType.tabCompletions(), args[2]);
+			case "invite":
+				if (args.length == 2)
+					return getTownyStartingWith(args[1], "r");
+			case "join":
+				if (args.length == 2)
+					return NameUtil.filterByStart(TownyCultures.getManager().getCultureList(), args[1]);
+			case "leave":
+			default:
+				return Collections.emptyList();
+		}
 	}
 
 	private void showCultureHelp(CommandSender sender) {
-		sender.sendMessage(ChatTools.formatTitle("/town set culture"));
-		sender.sendMessage(ChatTools.formatCommand("Eg", "/t set culture", "[culturename]", "Set your culture."));
-		sender.sendMessage(ChatTools.formatCommand("Eg", "/t set culture", "", "Remove your culture."));
+		sender.sendMessage(ChatTools.formatTitle("/culture"));
+		sender.sendMessage(ChatTools.formatCommand("Eg", "/culture create", "[name] [type]", "Create a new culture."));
+		sender.sendMessage(ChatTools.formatCommand("Eg", "/culture invite", "[resident]", "Invite a resident to your culture."));
+		sender.sendMessage(ChatTools.formatCommand("Eg", "/culture join", "[name]", "Join an existing culture."));
+		sender.sendMessage(ChatTools.formatCommand("Eg", "/culture leave", "", "Leave your culture."));
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
@@ -70,7 +83,7 @@ public class TownSetCultureAddon extends BaseCommand implements TabExecutor {
 		BukkitTools.ifCancelledThenThrow(new PreCultureSetEvent(newCulture, town));
 
 		//Set town culture
-		TownMetaDataController.setTownCulture(town, newCulture);
+		ResidentMetaDataController.setTownCulture(town, newCulture);
 		if (newCulture.isEmpty())
 			Messaging.sendPrefixedTownMessage(town, Translatable.of("msg_culture_removed"));
 		else

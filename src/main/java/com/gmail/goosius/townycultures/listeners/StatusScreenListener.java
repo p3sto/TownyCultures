@@ -12,7 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 import com.gmail.goosius.townycultures.TownyCultures;
-import com.gmail.goosius.townycultures.metadata.TownMetaDataController;
+import com.gmail.goosius.townycultures.metadata.ResidentMetaDataController;
 import com.gmail.goosius.townycultures.settings.Settings;
 import com.palmergames.adventure.text.Component;
 import com.palmergames.bukkit.towny.event.statusscreen.NationStatusScreenEvent;
@@ -28,7 +28,7 @@ public class StatusScreenListener implements Listener {
 	public void onTownStatusScreen(TownStatusScreenEvent event) {
 		if (!Settings.isTownyCulturesEnabled())
 			return;
-		String slug = TownMetaDataController.hasTownCulture(event.getTown()) ? TownyCultures.getCulture(event.getTown()) : "/town set culture [culture]";
+		String slug = ResidentMetaDataController.hasCulture(event.getTown()) ? TownyCultures.getCulture(event.getTown()) : "/town set culture [culture]";
 		event.getStatusScreen().addComponentOf("culture", Component.newline().append(Component.text(Translatable.of("status_town_culture", slug).forLocale(event.getCommandSender()))));
 	}
 
@@ -98,7 +98,7 @@ public class StatusScreenListener implements Listener {
 	 * Assigns the strength to the given Town's culture or to the "Unknown" category.
 	 */
 	private void assignStrength(Town town, int strength, Map<String, Integer> cultureStrength) {
-		String culture = TownMetaDataController.getTownCulture(town); // Returns the culture or "Unknown".
+		String culture = ResidentMetaDataController.getTownCulture(town); // Returns the culture or "Unknown".
 
 		if (cultureStrength.containsKey(culture)) // Culture already exists in the map. Add the strength to it.
 			strength += cultureStrength.get(culture);

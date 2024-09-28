@@ -6,7 +6,7 @@ import java.util.regex.PatternSyntaxException;
 import org.bukkit.entity.Player;
 
 import com.gmail.goosius.townycultures.TownyCultures;
-import com.gmail.goosius.townycultures.metadata.TownMetaDataController;
+import com.gmail.goosius.townycultures.metadata.ResidentMetaDataController;
 
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.TownySettings;
@@ -48,8 +48,8 @@ public class CultureUtil {
 	 * @return True if the resident has a town with the given culture.
 	 */
 	public static boolean isSameCulture(Resident res, String culture) {
-		return res.hasTown() && TownMetaDataController.hasTownCulture(res.getTownOrNull())
-				&& TownMetaDataController.getTownCulture(res.getTownOrNull()).equalsIgnoreCase(culture);
+		return res.hasTown() && ResidentMetaDataController.hasCulture(res.getTownOrNull())
+				&& ResidentMetaDataController.getResidentCulture(res).equalsIgnoreCase(culture);
 	}
 
 	/**

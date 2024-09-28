@@ -14,7 +14,7 @@ import com.palmergames.bukkit.util.ChatTools;
 import com.palmergames.util.StringMgmt;
 import com.gmail.goosius.townycultures.TownyCultures;
 import com.gmail.goosius.townycultures.enums.TownyCulturesPermissionNodes;
-import com.gmail.goosius.townycultures.metadata.TownMetaDataController;
+import com.gmail.goosius.townycultures.metadata.ResidentMetaDataController;
 import com.gmail.goosius.townycultures.utils.CultureUtil;
 import com.gmail.goosius.townycultures.utils.Messaging;
 
@@ -117,7 +117,7 @@ public class TownyAdminCultureAddon extends BaseCommand implements TabExecutor {
 		boolean found = false;
 		for (Town town : new ArrayList<>(TownyUniverse.getInstance().getTowns())) {
 			if (TownyCultures.getCulture(town).equalsIgnoreCase(culture)) {
-				TownMetaDataController.setTownCulture(town, "");
+				ResidentMetaDataController.setTownCulture(town, "");
 				found = true;
 			}
 		}
@@ -162,7 +162,7 @@ public class TownyAdminCultureAddon extends BaseCommand implements TabExecutor {
 			String newCulture = CultureUtil.validateCultureName(StringMgmt.join(StringMgmt.remArgs(args, 3), " "));
 
 			//Set culture
-			TownMetaDataController.setTownCulture(town, newCulture);
+			ResidentMetaDataController.setTownCulture(town, newCulture);
 
 			//Prepare feedback message.
 			Translatable message = newCulture.isEmpty() ? Translatable.of("msg_culture_removed")
@@ -186,7 +186,7 @@ public class TownyAdminCultureAddon extends BaseCommand implements TabExecutor {
 
 			//Set culture in all towns
 			for(Town town: new ArrayList<>(TownyUniverse.getInstance().getTowns()))
-				TownMetaDataController.setTownCulture(town, newCulture);
+				ResidentMetaDataController.setTownCulture(town, newCulture);
 
 			//Prepare feedback message.
 			Translatable message = newCulture.isEmpty() ? Translatable.of("msg_culture_removed_all_towns")
