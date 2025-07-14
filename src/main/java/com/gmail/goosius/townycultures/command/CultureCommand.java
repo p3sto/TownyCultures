@@ -7,17 +7,18 @@ import com.gmail.goosius.townycultures.events.PreCultureSetEvent;
 import com.gmail.goosius.townycultures.metadata.ResidentMetaDataController;
 import com.gmail.goosius.townycultures.utils.CultureUtil;
 import com.gmail.goosius.townycultures.utils.Messaging;
+import com.palmergames.bukkit.towny.TownyCommandAddonAPI;
 import com.palmergames.bukkit.towny.command.BaseCommand;
 import com.palmergames.bukkit.towny.exceptions.TownyException;
+import com.palmergames.bukkit.towny.TownyCommandAddonAPI.CommandType;
+import com.palmergames.bukkit.towny.object.AddonCommand;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.Translatable;
-import com.palmergames.bukkit.towny.utils.NameUtil;
 import com.palmergames.bukkit.util.BukkitTools;
 import com.palmergames.bukkit.util.ChatTools;
 import com.palmergames.util.StringMgmt;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,9 +27,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-public class CultureCommand extends BaseCommand implements TabExecutor {
+public class TownSetCultureAddon extends BaseCommand implements TabExecutor {
 
-	private static final List<String> residentCulturesTabComplete = Arrays.asList("create", "invite", "join", "leave");
+	public TownSetCultureAddon() {
+		AddonCommand townSetCultureCommand = new AddonCommand(CommandType.TOWN_SET, "culture", this);
+		TownyCommandAddonAPI.addSubCommand(townSetCultureCommand);
+	}
 
 	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
 		switch (args[0].toLowerCase()) {
@@ -48,10 +52,10 @@ public class CultureCommand extends BaseCommand implements TabExecutor {
 	}
 
 	private void showCultureHelp(CommandSender sender) {
-		sender.sendMessage(ChatTools.formatTitle("/culture"));
+		Messaging.sendMessage(sender, ChatTools.formatTitle("/culture"));
 		sender.sendMessage(ChatTools.formatCommand("Eg", "/culture create", "[name] [type]", "Create a new culture."));
-		sender.sendMessage(ChatTools.formatCommand("Eg", "/culture invite", "[resident]", "Invite a resident to your culture."));
-		sender.sendMessage(ChatTools.formatCommand("Eg", "/culture join", "[name]", "Join an existing culture."));
+		Messaging.sendMessage(sender, ChatTools.formatCommand("Eg", "/culture invite", "[resident]", "Invite a resident to your culture."));
+		Messaging.sendMessage(sender, ChatTools.formatCommand("Eg", "/culture join", "[name]", "Join an existing culture."));
 		sender.sendMessage(ChatTools.formatCommand("Eg", "/culture leave", "", "Leave your culture."));
 	}
 	
