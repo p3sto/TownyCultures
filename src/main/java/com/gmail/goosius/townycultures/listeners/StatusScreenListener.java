@@ -8,29 +8,59 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import com.gmail.goosius.townycultures.utils.PresetCulturesUtil;
+
+import com.gmail.goosius.townycultures.metadata.ResidentMetaDataController;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 import com.gmail.goosius.townycultures.TownyCultures;
 import com.gmail.goosius.townycultures.metadata.ResidentMetaDataController;
 import com.gmail.goosius.townycultures.settings.Settings;
-import com.palmergames.adventure.text.Component;
 import com.palmergames.bukkit.towny.event.statusscreen.NationStatusScreenEvent;
 import com.palmergames.bukkit.towny.event.statusscreen.TownStatusScreenEvent;
 import com.palmergames.bukkit.towny.object.Town;
-import com.palmergames.bukkit.towny.object.Translatable;
+import com.palmergames.bukkit.towny.object.Translation;
+import com.palmergames.bukkit.towny.object.Translator;
 import com.palmergames.util.StringMgmt;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
 
 public class StatusScreenListener implements Listener {
 
 
 	@EventHandler
 	public void onTownStatusScreen(TownStatusScreenEvent event) {
+        //[Culture]
+        //  Town Culture: Pataxian
+
 		if (!Settings.isTownyCulturesEnabled())
 			return;
 		String slug = ResidentMetaDataController.hasCulture(event.getTown()) ? TownyCultures.getCulture(event.getTown()) : "/town set culture [culture]";
 		event.getStatusScreen().addComponentOf("culture", Component.newline().append(Component.text(Translatable.of("status_town_culture", slug).forLocale(event.getCommandSender()))));
-	}
+
+
+        //Create the text inside the hover item
+        final Translator translator = Translator.locale(event.getCommandSender());
+        Component hoverText = Component.empty();
+        if(ResidentMetaDataController.hasCulture(event.getTown())) {
+            String cultureName = TownyCultures.getCulture(event.getTown());
+            if(Settings.isPresetCulturesEnabled() && PresetCulturesUtil.isPresetCulture(cultureName)) {
+                hoverText = hoverText.append(Component.text(translator.of("status_town_hover_content_culture_name_and_description", cultureName, PresetCulturesUtil.getPresetCulture(cultureName).getDescription())));
+            } else {
+                hoverText = hoverText.append(Component.text(translator.of("status_town_hover_content_culture_name", cultureName)));
+            }
+        } else {
+            hoverText = hoverText.append(Component.text(translator.of("status_town_hover_content_culture_not_set")));
+        }
+
+        //Add the hover item to the screen
+        event.getStatusScreen().addComponentOf("townyCultures_townScreenCultureHover",
+                Component.empty()
+                        .append(Component.text(hoverFormat(translator.of("status_town_hover_title_culture")))
+                                .hoverEvent(HoverEvent.showText(hoverText))));
+    }
 
 	/*
 	 * Adds a cultural breakdown of the Towns in a nation,
@@ -38,6 +68,10 @@ public class StatusScreenListener implements Listener {
 	 */
 	@EventHandler
 	public void onNationStatus(NationStatusScreenEvent event) {
+
+        //[Cultures]
+        //  Nation Cultures: Pataxian: 50%, Bilarian: 50%
+
 		if (!Settings.isTownyCulturesEnabled())
 			return;
 
@@ -90,9 +124,17 @@ public class StatusScreenListener implements Listener {
 		// Join the lines if need be.
 		String output = StringMgmt.join(cultures, ", ");
 
-		// Add our line to the NationStatusScreenEvent.
-		event.getStatusScreen().addComponentOf("cultures", Component.newline().append(Component.text(Translatable.of("status_town_culture", output).forLocale(event.getCommandSender()))));
-	}
+        //Create the text inside the hover item
+        final Translator translator = Translator.locale(event.getCommandSender());
+        Component hoverText = Component.empty();
+        hoverText = hoverText.append(Component.text(translator.of("status_nation_hover_content_cultures", output)));
+
+        //Add the hover item to the screen
+        event.getStatusScreen().addComponentOf("townyCultures_nationScreenCulturesHover",
+                Component.empty()
+                        .append(Component.text(hoverFormat(translator.of("status_nation_hover_title_cultures")))
+                                .hoverEvent(HoverEvent.showText(hoverText))));
+    }
 
 	/*
 	 * Assigns the strength to the given Town's culture or to the "Unknown" category.
@@ -139,4 +181,11 @@ public class StatusScreenListener implements Listener {
 
         return result;
 	}
+
+    private String hoverFormat(String hover) {
+        return String.format(hover,
+                Translation.of("status_format_hover_bracket_colour"),
+                Translation.of("status_format_hover_key"),
+                Translation.of("status_format_hover_bracket_colour"));
+    }
 }

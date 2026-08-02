@@ -3,8 +3,11 @@ package com.gmail.goosius.townycultures;
 import com.gmail.goosius.townycultures.command.TownyAdminCultureAddon;
 import com.gmail.goosius.townycultures.command.CultureChatCommand;
 import com.gmail.goosius.townycultures.command.CultureCommand;
+import com.gmail.goosius.townycultures.command.TownSetCultureAddon;
 import com.gmail.goosius.townycultures.command.TownyAdminReloadAddon;
 import com.gmail.goosius.townycultures.integrations.TownyCulturesPlaceholderExpansion;
+import com.gmail.goosius.townycultures.listeners.TownyChatListener;
+import com.gmail.goosius.townycultures.listeners.TownListener;
 import com.gmail.goosius.townycultures.listeners.TownyDynmapListener;
 import com.gmail.goosius.townycultures.listeners.TownyListener;
 import com.gmail.goosius.townycultures.metadata.ResidentMetaDataController;
@@ -12,6 +15,7 @@ import com.gmail.goosius.townycultures.utils.CultureUtil;
 
 import com.gmail.goosius.townycultures.utils.CultureManager;
 import com.palmergames.bukkit.towny.Towny;
+import com.gmail.goosius.townycultures.utils.PresetCulturesUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -31,10 +35,14 @@ import java.util.List;
 public class TownyCultures extends JavaPlugin {
 
 	private static TownyCultures plugin;
-	public static String prefix = "[TownyCultures] ";
-	private static Version requiredTownyVersion = Version.fromString("0.100.4.0");
+	private static Version requiredTownyVersion = Version.fromString("0.101.2.5");
 	private static boolean dynmapTowny = false;
+	private static boolean townyChatPresent = false;
 	private static CultureManager manager;
+
+    public TownyCultures() {
+        plugin = this;
+    }
 
 	public static TownyCultures getTownyCultures() {
 		return plugin;
@@ -69,6 +77,10 @@ public class TownyCultures extends JavaPlugin {
 
 			registerCommands();
 
+            PresetCulturesUtil.loadPresetCultures();
+
+            PresetCulturesUtil.sanitizeTownCultures();
+
 			info("TownyCultures loaded successfully.");
 		} else {
 			info("TownyCultures loaded successfully but is disabled by config.");
@@ -86,6 +98,9 @@ public class TownyCultures extends JavaPlugin {
 		if (test != null)
 			dynmapTowny = true;
 
+		test = getServer().getPluginManager().getPlugin("TownyChat");
+		if (test != null)
+			townyChatPresent = true;
 	}
 
 	@Override
@@ -107,7 +122,10 @@ public class TownyCultures extends JavaPlugin {
 
 	private void registerListeners(PluginManager pm) {
 		pm.registerEvents(new StatusScreenListener(), this);
+        pm.registerEvents(new TownListener(), this);
 		pm.registerEvents(new TownyListener(), this);
+		if (townyChatPresent)
+			pm.registerEvents(new TownyChatListener(), this);
 		if (dynmapTowny)
 			pm.registerEvents(new TownyDynmapListener(), this);
 	}

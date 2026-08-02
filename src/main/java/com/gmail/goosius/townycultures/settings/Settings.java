@@ -3,7 +3,17 @@ package com.gmail.goosius.townycultures.settings;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.bukkit.Material;
+import org.jetbrains.annotations.NotNull;
+
+import com.gmail.goosius.townycultures.objects.PresetCulture;
+import com.gmail.goosius.townycultures.enums.AutomaticCultureSelectionType;
+import com.palmergames.bukkit.towny.object.Coord;
 import org.bukkit.plugin.Plugin;
 
 import com.gmail.goosius.townycultures.TownyCultures;
@@ -16,10 +26,11 @@ import com.palmergames.util.FileMgmt;
 public class Settings {
 	private static CommentedConfiguration config, newConfig;
 	private static Path configPath = TownyCultures.getTownyCultures().getDataFolder().toPath().resolve("config.yml");
+    private final static Pattern LIST_REGEX_PATTERN = Pattern.compile("\\{([^}]+)}", Pattern.CASE_INSENSITIVE);
 
 	public static boolean loadSettingsAndLang() {
 		try {
-			Settings.loadConfig();
+			loadConfig();
 		} catch (IOException e) {
 			TownyCultures.severe(String.format("Loading error: Failed to load file %s (does it pass a yaml parser?).", configPath));
 			TownyCultures.severe("https://jsonformatter.org/yaml-parser");
@@ -159,4 +170,41 @@ public class Settings {
 	public static int maxNameLength() {
 		return Settings.getInt(ConfigNodes.MAXIMUM_NAME_LENGTH);
 	}
+
+    public static boolean isPresetCulturesEnabled() {
+        return getBoolean(ConfigNodes.PRESET_CULTURES_ENABLED);
+    }
+
+    public static AutomaticCultureSelectionType getAutomaticCultureSelectionType() {
+        return AutomaticCultureSelectionType.parseText(getString(ConfigNodes.PRESET_CULTURES_AUTOMATIC_CULTURE_SELECTION_TYPE));
+    }
+
+    public static List<PresetCulture> getPresetCulturesList() {
+        List<PresetCulture> presetCulturesAsList = new ArrayList<>();
+        String presetCulturesListAsString = getString(ConfigNodes.PRESET_CULTURES_LIST);
+
+        if(!presetCulturesListAsString.isEmpty()) {
+            Matcher matcher = LIST_REGEX_PATTERN.matcher(presetCulturesListAsString);
+            String presetCultureAsString;
+            String[] presetCultureAsArray;
+            PresetCulture presetCulture;
+
+            while (matcher.find()) {
+                //Read one culture
+                presetCultureAsString = matcher.group(1);
+                presetCultureAsArray = presetCultureAsString.replaceAll("\\[", "").replaceAll("]", "").split(",");
+                presetCulture = getPresetCulture(presetCultureAsArray);
+                presetCulturesAsList.add(presetCulture);
+            }
+        }
+        return presetCulturesAsList;
+    }
+
+    private static @NotNull PresetCulture getPresetCulture(String[] presetCultureAsArray) {
+        Coord topLeftCoord = Coord.parseCoord(Integer.parseInt(presetCultureAsArray[0].trim()), Integer.parseInt(presetCultureAsArray[1].trim()));
+        Coord bottomRightCoord = Coord.parseCoord(Integer.parseInt(presetCultureAsArray[2].trim()), Integer.parseInt(presetCultureAsArray[3].trim()));
+        String cultureName = presetCultureAsArray[4].trim();
+        String cultureDescription = presetCultureAsArray[5].trim();
+        return new PresetCulture(topLeftCoord,bottomRightCoord,cultureName,cultureDescription);
+    }
 }
